@@ -56,6 +56,7 @@ Add the following to your MCP client configuration:
 
         // Optional (defaults shown)
         "EXPORT_DIRECTORY": "~/Downloads/Metabase",    // Export location
+        "METABASE_PROXY_AUTHORIZATION": "",            // Optional Proxy-Authorization value for IAP, e.g. "Bearer <token>"
         "METABASE_READ_ONLY_MODE": "true",             // Restrict to SELECT queries
         "LOG_LEVEL": "info",                           // debug, info, warn, error, fatal (debug enables pretty JSON)
         "CACHE_TTL_MS": "600000",                      // 10 minutes
@@ -186,6 +187,8 @@ Creates `metabase-mcp-{version}.mcpb` ready for GitHub Releases.
 **Read-Only Mode** is enabled by default (`METABASE_READ_ONLY_MODE=true`), restricting the `execute` tool to SELECT queries only. Write operations (INSERT, UPDATE, DELETE, DROP, etc.) are blocked. Set to `false` to allow write operations.
 
 **Authentication**: API key authentication is recommended over email/password for production use.
+
+**Proxy Authentication**: Set `METABASE_PROXY_AUTHORIZATION` when Metabase is behind a proxy that requires a `Proxy-Authorization` header, such as Google IAP. The value is passed through exactly as provided, for example `Bearer <token>`.
 
 ## License
 

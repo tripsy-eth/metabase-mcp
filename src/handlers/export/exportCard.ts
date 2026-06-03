@@ -6,8 +6,9 @@ import {
   validateMetabaseResponse,
   formatJson,
   normalizeCardParametersForMetabase,
+  buildMetabaseHeaders,
 } from '../../utils/index.js';
-import { config, authMethod, AuthMethod } from '../../config.js';
+import { config, authMethod } from '../../config.js';
 import * as XLSX from 'xlsx';
 import { CardExportParams, ExportResponse } from './types.js';
 import * as fs from 'fs';
@@ -120,16 +121,15 @@ export async function exportCard(
 
     // For export endpoints, we need to handle different response types
     const url = new URL(exportEndpoint, config.METABASE_URL);
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-    };
-
-    // Add appropriate authentication headers
-    if (authMethod === AuthMethod.API_KEY && config.METABASE_API_KEY) {
-      headers['X-API-KEY'] = config.METABASE_API_KEY;
-    } else if (authMethod === AuthMethod.SESSION && apiClient.sessionToken) {
-      headers['X-Metabase-Session'] = apiClient.sessionToken;
-    }
+    const headers = buildMetabaseHeaders({
+      baseHeaders: {
+        'Content-Type': 'application/json',
+      },
+      authMethod,
+      apiKey: config.METABASE_API_KEY,
+      sessionToken: apiClient.sessionToken,
+      proxyAuthorization: config.METABASE_PROXY_AUTHORIZATION,
+    });
 
     const response = await fetch(url.toString(), {
       method: 'POST',

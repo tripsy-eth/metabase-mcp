@@ -24,6 +24,7 @@ export function isLogLevelEnabled(
 const SENSITIVE_HEADER_NAMES = new Set([
   'x-api-key',
   'authorization',
+  'proxy-authorization',
   'x-metabase-session',
   'cookie',
   'set-cookie',

@@ -2,6 +2,7 @@ import { config, AuthMethod, LogLevel } from './config.js';
 import { ErrorCode, McpError, isMcpError } from './types/core.js';
 import { NetworkErrorFactory, createErrorFromHttpResponse } from './utils/errorFactory.js';
 import { isLogLevelEnabled, maskHttpHeadersForLog } from './utils/logging.js';
+import { buildMetabaseHeaders } from './utils/requestUtils.js';
 
 // Interface for tracking data source in API responses
 export interface CachedResponse<T> {
@@ -143,15 +144,13 @@ export class MetabaseApiClient {
    */
   async request<T>(path: string, options: RequestInit = {}): Promise<T> {
     const url = new URL(path, this.baseUrl);
-    const headers = { ...this.headers };
-
-    // Add appropriate authentication headers based on the method
-    if (this.authMethod === AuthMethod.API_KEY && this.apiKey) {
-      // Use X-API-KEY header as specified in the Metabase documentation
-      headers['X-API-KEY'] = this.apiKey;
-    } else if (this.authMethod === AuthMethod.SESSION && this.sessionToken) {
-      headers['X-Metabase-Session'] = this.sessionToken;
-    }
+    const headers = buildMetabaseHeaders({
+      baseHeaders: this.headers,
+      authMethod: this.authMethod,
+      apiKey: this.apiKey,
+      sessionToken: this.sessionToken,
+      proxyAuthorization: config.METABASE_PROXY_AUTHORIZATION,
+    });
 
     this.logDebug(`Making request to ${url.toString()}`);
     this.logDebug(`Using headers: ${JSON.stringify(maskHttpHeadersForLog(headers))}`);

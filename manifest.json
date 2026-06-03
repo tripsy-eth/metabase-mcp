@@ -25,6 +25,7 @@
       "env": {
         "METABASE_URL": "${user_config.metabase_url}",
         "METABASE_API_KEY": "${user_config.metabase_api_key}",
+        "METABASE_PROXY_AUTHORIZATION": "${user_config.metabase_proxy_authorization}",
         "METABASE_USER_EMAIL": "${user_config.metabase_user_email}",
         "METABASE_PASSWORD": "${user_config.metabase_password}",
         "EXPORT_DIRECTORY": "${user_config.export_directory}",
@@ -83,6 +84,14 @@
       "type": "string",
       "title": "API Key",
       "description": "Metabase API Key. Leave empty for email/password authentication.",
+      "required": false,
+      "sensitive": true,
+      "default": ""
+    },
+    "metabase_proxy_authorization": {
+      "type": "string",
+      "title": "Proxy Authorization",
+      "description": "Optional Proxy-Authorization header value for proxy authentication such as Google IAP. Example: Bearer <token>.",
       "required": false,
       "sensitive": true,
       "default": ""

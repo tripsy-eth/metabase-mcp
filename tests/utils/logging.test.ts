@@ -9,6 +9,7 @@ describe('logging utilities', () => {
       'X-API-KEY': 'secret-key',
       'X-Metabase-Session': 'session-token',
       Authorization: 'Bearer token',
+      'Proxy-Authorization': 'Bearer iap-token',
       Cookie: 'sid=secret',
     };
 
@@ -19,6 +20,7 @@ describe('logging utilities', () => {
       'X-API-KEY': '***',
       'X-Metabase-Session': '***',
       Authorization: '***',
+      'Proxy-Authorization': '***',
       Cookie: '***',
     });
     expect(headers['X-API-KEY']).toBe('secret-key');

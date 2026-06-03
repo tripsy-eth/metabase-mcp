@@ -33,6 +33,7 @@ const envSchema = z
   .object({
     METABASE_URL: z.string().url('METABASE_URL must be a valid URL'),
     METABASE_API_KEY: z.string().optional(),
+    METABASE_PROXY_AUTHORIZATION: z.string().optional(),
     METABASE_USER_EMAIL: z.string().email().optional(),
     METABASE_PASSWORD: z.string().min(1).optional(),
     NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
@@ -77,6 +78,7 @@ function createTestConfig() {
   return {
     METABASE_URL: 'http://localhost:3000',
     METABASE_API_KEY: 'test-api-key',
+    METABASE_PROXY_AUTHORIZATION: undefined,
     METABASE_USER_EMAIL: undefined,
     METABASE_PASSWORD: undefined,
     NODE_ENV: 'test' as const,
