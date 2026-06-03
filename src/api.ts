@@ -1,15 +1,7 @@
-import { config, AuthMethod } from './config.js';
+import { config, AuthMethod, LogLevel } from './config.js';
 import { ErrorCode, McpError, isMcpError } from './types/core.js';
 import { NetworkErrorFactory, createErrorFromHttpResponse } from './utils/errorFactory.js';
-
-// Logger level enum
-enum LogLevel {
-  DEBUG = 'debug',
-  INFO = 'info',
-  WARN = 'warn',
-  ERROR = 'error',
-  FATAL = 'fatal',
-}
+import { isLogLevelEnabled, maskHttpHeadersForLog } from './utils/logging.js';
 
 // Interface for tracking data source in API responses
 export interface CachedResponse<T> {
@@ -89,6 +81,10 @@ export class MetabaseApiClient {
 
   // Enhanced logging utilities
   private log(level: LogLevel, message: string, data?: unknown, error?: Error) {
+    if (!isLogLevelEnabled(level)) {
+      return;
+    }
+
     const timestamp = new Date().toISOString();
 
     const logMessage: Record<string, unknown> = {
@@ -158,7 +154,7 @@ export class MetabaseApiClient {
     }
 
     this.logDebug(`Making request to ${url.toString()}`);
-    this.logDebug(`Using headers: ${JSON.stringify(headers)}`);
+    this.logDebug(`Using headers: ${JSON.stringify(maskHttpHeadersForLog(headers))}`);
 
     // Create abort controller for timeout
     const controller = new AbortController();

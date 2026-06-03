@@ -12,6 +12,7 @@ import {
   GetPromptRequestSchema,
 } from '@modelcontextprotocol/sdk/types.js';
 import { LogLevel } from './config.js';
+import { isLogLevelEnabled } from './utils/logging.js';
 import { generateRequestId } from './utils/index.js';
 // Note: ApiError and isMcpError removed - errors are caught and returned, not type-checked
 import { MetabaseApiClient } from './api.js';
@@ -69,6 +70,10 @@ export class MetabaseServer {
 
   // Enhanced logging utilities
   private log(level: LogLevel, message: string, data?: unknown, error?: Error) {
+    if (!isLogLevelEnabled(level)) {
+      return;
+    }
+
     const timestamp = new Date().toISOString();
 
     const logMessage: Record<string, unknown> = {
