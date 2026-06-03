@@ -11,10 +11,14 @@ const LEVEL_PRIORITY: Record<LogLevel, number> = {
 /**
  * Whether a log line at `level` should be emitted for the configured minimum `LOG_LEVEL`.
  */
-export function isLogLevelEnabled(level: LogLevel): boolean {
-  const threshold =
-    LEVEL_PRIORITY[config.LOG_LEVEL as LogLevel] ?? LEVEL_PRIORITY[LogLevel.INFO];
-  return LEVEL_PRIORITY[level] >= threshold;
+export function isLogLevelEnabled(
+  level: LogLevel,
+  minimumLevel: LogLevel = config.LOG_LEVEL as LogLevel
+): boolean {
+  const levelPriority = LEVEL_PRIORITY[level];
+  const minimumPriority = LEVEL_PRIORITY[minimumLevel] ?? LEVEL_PRIORITY[LogLevel.INFO];
+
+  return levelPriority >= minimumPriority;
 }
 
 const SENSITIVE_HEADER_NAMES = new Set([
@@ -27,9 +31,9 @@ const SENSITIVE_HEADER_NAMES = new Set([
 
 /** Returns a shallow copy of headers with credential values replaced for safe logging. */
 export function maskHttpHeadersForLog(headers: Record<string, string>): Record<string, string> {
-  const out: Record<string, string> = {};
+  const maskedHeaders: Record<string, string> = {};
   for (const [name, value] of Object.entries(headers)) {
-    out[name] = SENSITIVE_HEADER_NAMES.has(name.toLowerCase()) ? '***' : value;
+    maskedHeaders[name] = SENSITIVE_HEADER_NAMES.has(name.toLowerCase()) ? '***' : value;
   }
-  return out;
+  return maskedHeaders;
 }
