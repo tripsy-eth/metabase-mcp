@@ -5,6 +5,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { handleExport } from '../../src/handlers/export/index.js';
 import { McpError } from '../../src/types/core.js';
+import { config } from '../../src/config.js';
 import {
   mockApiClient,
   mockLogger,
@@ -64,6 +65,7 @@ describe('handleExport (export command)', () => {
     vi.mocked(fs.existsSync).mockReturnValue(true);
     vi.mocked(fs.mkdirSync).mockReturnValue(undefined);
     vi.mocked(fs.writeFileSync).mockReturnValue(undefined);
+    config.METABASE_PROXY_AUTHORIZATION = undefined;
   });
 
   describe('Parameter validation', () => {
@@ -277,6 +279,41 @@ describe('handleExport (export command)', () => {
       expect(responseData.success).toBe(true);
       expect(responseData.row_count).toBe(2);
       expect(responseData.file_path).toContain('.json');
+    });
+
+    it('should include proxy authorization header when exporting SQL query', async () => {
+      config.METABASE_PROXY_AUTHORIZATION = 'Bearer iap-token';
+
+      const request = createMockRequest('export', {
+        database_id: 1,
+        query: 'SELECT * FROM users',
+        format: 'csv'
+      });
+      const [logDebug, logInfo, logWarn, logError] = getLoggerFunctions();
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        text: () => Promise.resolve('id,name\n1,John'),
+      });
+
+      await handleExport(
+        request,
+        'test-request-id',
+        mockApiClient as any,
+        logDebug,
+        logInfo,
+        logWarn,
+        logError
+      );
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        expect.stringContaining('/api/dataset/csv'),
+        expect.objectContaining({
+          headers: expect.objectContaining({
+            'Proxy-Authorization': 'Bearer iap-token',
+          }),
+        })
+      );
     });
 
     it('should export SQL query in XLSX format successfully', async () => {
@@ -682,6 +719,46 @@ describe('handleExport (export command)', () => {
               }
             ]
           })
+        })
+      );
+    });
+
+    it('should include proxy authorization header when exporting card', async () => {
+      config.METABASE_PROXY_AUTHORIZATION = 'Bearer iap-token';
+
+      const request = createMockRequest('export', {
+        card_id: 123,
+        format: 'csv'
+      });
+      const [logDebug, logInfo, logWarn, logError] = getLoggerFunctions();
+
+      mockApiClient.getCard.mockResolvedValueOnce({
+        data: { id: 123, name: 'User Report' },
+        source: 'api',
+        fetchTime: 100
+      });
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        text: () => Promise.resolve('id,name\n1,John'),
+      });
+
+      await handleExport(
+        request,
+        'test-request-id',
+        mockApiClient as any,
+        logDebug,
+        logInfo,
+        logWarn,
+        logError
+      );
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        expect.stringContaining('/api/card/123/query/csv'),
+        expect.objectContaining({
+          headers: expect.objectContaining({
+            'Proxy-Authorization': 'Bearer iap-token',
+          }),
         })
       );
     });
